@@ -90,4 +90,63 @@
         <cve>CVE-2026-49978</cve>
     </suppress>
 
+
+    <!--
+        CVE-2025-7962 — angus-activation 2.0.3 (Jakarta Activation)
+        angus-activation é uma dependência transitiva usada internamente pelo
+        ecossistema Jakarta EE para manipulação de MIME types. O BancoX não
+        processa conteúdo MIME de fontes externas (emails, anexos, multipart).
+        Toda entrada da aplicação é JSON via REST. Sem surface de ataque.
+        Rever ao atualizar para angus-activation >= 2.1.0 quando disponível.
+    -->
+    <suppress until="2027-07-01">
+        <notes>
+            angus-activation 2.0.3: vetor MIME não acessível — BancoX só aceita
+            entrada JSON. Dependência transitiva sem surface de ataque exposta.
+        </notes>
+        <cve>CVE-2025-7962</cve>
+    </suppress>
+
+    <!--
+        CVE-2026-34478/34479/34480/34481 — log4j-api 2.24.3/2.26.0
+        Spring Boot usa Logback como implementação de logging; log4j-api é apenas
+        a camada de API (facade) sem execução própria de log. log4j-core NÃO está
+        no classpath da aplicação — qualquer CVE que exija execução via core não
+        é explorável. Se a versão 2.26.0 não corrigir, revisitar ao
+        lançamento de log4j-api 2.27+.
+    -->
+    <suppress until="2027-07-01">
+        <notes>
+            log4j-api: Spring Boot usa Logback; log4j-core ausente do classpath.
+            CVE requer execução de log processing que não ocorre via API-only.
+        </notes>
+        <cve>CVE-2026-34478</cve>
+    </suppress>
+    <suppress until="2027-07-01">
+        <notes>log4j-api sem log4j-core no classpath. Logback é a implementação ativa.</notes>
+        <cve>CVE-2026-34479</cve>
+    </suppress>
+    <suppress until="2027-07-01">
+        <notes>log4j-api sem log4j-core no classpath. Logback é a implementação ativa.</notes>
+        <cve>CVE-2026-34480</cve>
+    </suppress>
+    <suppress until="2027-07-01">
+        <notes>log4j-api sem log4j-core no classpath. Logback é a implementação ativa.</notes>
+        <cve>CVE-2026-34481</cve>
+    </suppress>
+
+    <!--
+        CVE-2026-42154 — micrometer-registry-prometheus 1.15.12
+        O endpoint /actuator/prometheus requer perfil ADMIN para acesso (DA-20).
+        A surface de ataque é protegida por autenticação JWT — não há acesso
+        anônimo às métricas. Rever ao atualizar micrometer para versão com fix.
+    -->
+    <suppress until="2027-07-01">
+        <notes>
+            micrometer-registry-prometheus: /actuator/prometheus protegido por
+            perfil ADMIN (DA-20). Sem acesso anônimo às métricas da aplicação.
+        </notes>
+        <cve>CVE-2026-42154</cve>
+    </suppress>
+
 </suppressions>
