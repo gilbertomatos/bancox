@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.domain.Persistable;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -16,10 +17,9 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class TransferenciaEntity {
+public class TransferenciaEntity implements Persistable<UUID> {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @Column(name = "conta_origem", nullable = false)
@@ -33,4 +33,12 @@ public class TransferenciaEntity {
 
     @Column(name = "criado_em", nullable = false, updatable = false)
     private Instant criadoEm;
+
+    // Persistable.isNew() = true força persist() em vez de merge() no Spring Data JPA.
+    // TransferenciaEntity é imutável (DA-03) — nunca atualizada após INSERT.
+    // Hibernate 6.6.x confundia @GeneratedValue + id explícito com entidade detached.
+    @Override
+    public boolean isNew() {
+        return true;
+    }
 }

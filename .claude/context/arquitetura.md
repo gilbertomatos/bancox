@@ -257,3 +257,17 @@ Adicionar /favicon.ico, /error, /static/**, /css/**, /js/**, /img/** ao permitAl
 ### SRI (integrity) em CDNs
 NÃO usar atributo integrity — hash pode divergir com atualizações silenciosas do CDN.
 Usar crossorigin="anonymous" sem integrity (DA-28).
+
+### Hibernate 6.6.x — ordem de flush com FK declarada como @Column UUID
+Hibernate 6.6.x (Spring Boot 3.5.x) mudou a ordem de flush de entidades sem relacionamento JPA explícito.
+Se `LancamentoEntity.transferId` é `@Column UUID` (sem `@ManyToOne`), o Hibernate não detecta a dependência
+com `TransferenciaEntity` e pode inserir os lançamentos antes da transferência, violando a FK.
+Solução: usar `saveAndFlush()` para forçar o INSERT da entidade pai antes das entidades que a referenciam.
+```java
+// CORRETO — garante INSERT imediato antes dos lançamentos que referenciam transfer_id por FK
+transferenciaRepository.saveAndFlush(transferencia);
+
+// ERRADO — Hibernate 6.6.x pode reordenar o flush e inserir lançamentos antes
+transferenciaRepository.save(transferencia);
+```
+Afeta também os testes unitários com Mockito: stub deve usar `saveAndFlush`, não `save`.

@@ -59,7 +59,7 @@ class TransferenciaServiceTest {
     void deveRealizarTransferenciaComSucesso() {
         when(contaRepository.findById(contaOrigemId)).thenReturn(Optional.of(contaOrigem));
         when(contaRepository.findById(contaDestinoId)).thenReturn(Optional.of(contaDestino));
-        when(transferenciaRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+        when(transferenciaRepository.saveAndFlush(any())).thenAnswer(i -> i.getArgument(0));
 
         var result = transferenciaService.transferir(
             contaOrigemId, principal, contaDestinoId, new BigDecimal("200.00"));
@@ -77,7 +77,7 @@ class TransferenciaServiceTest {
     void devePersistirTransferenciaComMesmoTransferId() {
         when(contaRepository.findById(contaOrigemId)).thenReturn(Optional.of(contaOrigem));
         when(contaRepository.findById(contaDestinoId)).thenReturn(Optional.of(contaDestino));
-        when(transferenciaRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+        when(transferenciaRepository.saveAndFlush(any())).thenAnswer(i -> i.getArgument(0));
 
         transferenciaService.transferir(contaOrigemId, principal, contaDestinoId, new BigDecimal("100.00"));
 
