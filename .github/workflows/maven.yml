@@ -1,12 +1,4 @@
-# This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-maven
-
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-
-name: Java CI with Maven
+name: Java CI — BancoX
 
 on:
   push:
@@ -14,22 +6,62 @@ on:
   pull_request:
     branches: [ "main" ]
 
+permissions:
+  contents: read
+
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
-    steps:
-    - uses: actions/checkout@v4
-    - name: Set up JDK 21
-      uses: actions/setup-java@v4
-      with:
-        java-version: '21'
-        distribution: 'temurin'
-        cache: maven
-    - name: Build with Maven
-      run: mvn -B clean package --file pom.xml
+    env:
+      # JWT_SECRET obrigatório (DA-14) — configurar em Settings → Secrets → Actions
+      # O valor abaixo é exclusivo para CI; nunca usar em produção
+      JWT_SECRET: ${{ secrets.JWT_SECRET || 'bancox-ci-dev-jwt-secret-nao-usar-em-producao-000000000000000000000000' }}
 
-    # Optional: Uploads the full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
-    #- name: Update dependency graph
-    #  uses: advanced-security/maven-dependency-submission-action@571e99aab1055c2e71a1e2309b9691de18d6b7d6
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # histórico completo para o Gitleaks
+
+      - name: Configurar JDK 21 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Calcular chave semanal para cache NVD
+        id: date
+        run: echo "week=$(date +%Y-W%V)" >> $GITHUB_OUTPUT
+
+      # Cache semanal da base NVD do OWASP Dependency-Check.
+      # Sem API key: download inicial limitado a 5 req/30s (lento apenas na primeira execução da semana).
+      # Com NVD_API_KEY em Settings → Secrets: 50 req/30s (~3 min).
+      - name: Cache dados NVD — OWASP Dependency-Check
+        id: dc-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository/org/owasp/dependency-check-data
+          key: owasp-dc-nvd-${{ runner.os }}-${{ steps.date.outputs.week }}
+          restore-keys: |
+            owasp-dc-nvd-${{ runner.os }}-
+
+      # Cache hit → dados NVD frescos do cache (-DautoUpdate=false, execução rápida)
+      # Cache miss → primeira execução da semana: baixa atualizações do NVD
+      - name: Build, testes e SAST (mvn verify)
+        env:
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+        run: |
+          if ${{ steps.dc-cache.outputs.cache-hit == 'true' }}; then
+            mvn -B verify --file pom.xml -DautoUpdate=false
+          else
+            mvn -B verify --file pom.xml
+          fi
+
+      - name: Gitleaks — detecção de segredos no histórico git
+        run: |
+          GITLEAKS_VERSION=8.21.2
+          curl -sSfL \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" \
+            | tar -xz gitleaks
+          ./gitleaks detect --source . --config .gitleaks.toml
