@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="pt-BR">
+<head th:replace="~{fragments/layout :: head('Extrato')}"></head>
+<body>
+
+<div th:replace="~{fragments/layout :: navbar}"></div>
+
+<div class="container py-4">
+    <div th:replace="~{fragments/alert :: alertas}"></div>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="fw-semibold mb-0"><i class="bi bi-clock-history me-2"></i>Extrato</h4>
+        <a th:href="@{/}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left"></i> Voltar
+        </a>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form th:action="@{/extrato}" method="get" class="row g-3 align-items-end">
+                <div class="col-sm-4">
+                    <label class="form-label small fw-semibold">Data inicial</label>
+                    <input type="date" name="dataInicio" class="form-control"
+                           th:value="${dataInicio}"/>
+                </div>
+                <div class="col-sm-4">
+                    <label class="form-label small fw-semibold">Data final</label>
+                    <input type="date" name="dataFim" class="form-control"
+                           th:value="${dataFim}"/>
+                </div>
+                <div class="col-sm-4">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-funnel me-1"></i> Filtrar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Saldo + período -->
+    <div th:if="${saldoAtual != null}" class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-primary text-white shadow-sm">
+                <div class="card-body">
+                    <p class="small opacity-75 mb-1">Saldo atual</p>
+                    <h4 class="fw-bold font-monospace mb-0"
+                        th:text="${#numbers.formatCurrency(saldoAtual)}">R$ 0,00</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8 d-flex align-items-center">
+            <span class="text-muted small">
+                Período: <strong th:text="${periodo}">—</strong> |
+                <span th:text="${totalLancamentos}">0</span> lançamento(s)
+                <span th:if="${limiteAtingido}" class="text-warning fw-semibold ms-1">
+                    (limite de 50 atingido)
+                </span>
+            </span>
+        </div>
+    </div>
+
+    <!-- Gráfico -->
+    <div th:if="${lancamentos != null and !#lists.isEmpty(lancamentos)}" class="card shadow-sm mb-4">
+        <div class="card-body">
+            <canvas id="graficoExtrato" height="100"></canvas>
+        </div>
+    </div>
+
+    <!-- Tabela de lançamentos -->
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <div th:if="${lancamentos == null or #lists.isEmpty(lancamentos)}"
+                 class="alert alert-info m-3 mb-0">
+                <i class="bi bi-info-circle me-2"></i>
+                Nenhuma movimentação encontrada no período informado.
+            </div>
+            <div th:unless="${lancamentos == null or #lists.isEmpty(lancamentos)}"
+                 class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Tipo</th>
+                            <th>Data/Hora</th>
+                            <th class="text-end">Valor</th>
+                            <th class="text-end">Saldo após</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="l : ${lancamentos}">
+                            <td>
+                                <i th:classappend="${l.tipo == 'credito'} ? 'bi-arrow-up-circle-fill text-success' : (${l.tipo == 'debito'} ? 'bi-arrow-down-circle-fill text-danger' : 'bi-arrow-left-right text-secondary')"
+                                   class="bi me-1"></i>
+                                <span class="text-capitalize small" th:text="${l.tipo}">tipo</span>
+                            </td>
+                            <td class="small text-muted"
+                                th:text="${#temporals.format(l.timestamp, 'dd/MM/yyyy HH:mm')}">—</td>
+                            <td class="text-end font-monospace"
+                                th:classappend="${l.tipo == 'credito'} ? 'text-success' : 'text-danger'"
+                                th:text="${#numbers.formatCurrency(l.valor)}">R$ 0,00</td>
+                            <td class="text-end font-monospace small"
+                                th:text="${#numbers.formatCurrency(l.saldoApos)}">R$ 0,00</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script crossorigin="anonymous"
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<th:block th:if="${lancamentos != null and !#lists.isEmpty(lancamentos)}">
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    const labels = /*[[${labelsGrafico}]]*/ [];
+    const creditos = /*[[${creditosGrafico}]]*/ [];
+    const debitos = /*[[${debitosGrafico}]]*/ [];
+    new Chart(document.getElementById('graficoExtrato'), {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                { label: 'Créditos', data: creditos, backgroundColor: 'rgba(25,135,84,0.6)' },
+                { label: 'Débitos',  data: debitos,  backgroundColor: 'rgba(220,53,69,0.6)'  }
+            ]
+        },
+        options: { responsive: true, plugins: { legend: { position: 'top' } } }
+    });
+    /*]]>*/
+</script>
+</th:block>
+</body>
+</html>

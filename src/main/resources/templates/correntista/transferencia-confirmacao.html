@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="pt-BR">
+<head th:replace="~{fragments/layout :: head('Confirmar Transferência')}"></head>
+<body>
+
+<div th:replace="~{fragments/layout :: navbar}"></div>
+
+<div class="container py-4" style="max-width: 560px;">
+    <div th:replace="~{fragments/alert :: alertas}"></div>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="fw-semibold mb-0"><i class="bi bi-shield-check me-2"></i>Confirmar Transferência</h4>
+    </div>
+
+    <div class="card shadow-sm mb-3">
+        <div class="card-body">
+            <dl class="row mb-0">
+                <dt class="col-sm-5 text-muted small">Conta destino</dt>
+                <dd class="col-sm-7 font-monospace small" th:text="${contaDestino}">—</dd>
+
+                <dt class="col-sm-5 text-muted small">Valor</dt>
+                <dd class="col-sm-7 fw-bold text-danger font-monospace"
+                    th:text="${#numbers.formatCurrency(valor)}">R$ 0,00</dd>
+
+                <dt class="col-sm-5 text-muted small">Saldo atual</dt>
+                <dd class="col-sm-7 font-monospace"
+                    th:text="${#numbers.formatCurrency(saldoAnterior)}">R$ 0,00</dd>
+
+                <dt class="col-sm-5 text-muted small">Saldo após</dt>
+                <dd class="col-sm-7 fw-bold font-monospace"
+                    th:text="${#numbers.formatCurrency(saldoApos)}">R$ 0,00</dd>
+            </dl>
+        </div>
+    </div>
+
+    <form th:action="@{/transferencia/confirmar}" method="post" class="d-flex gap-2">
+        <input type="hidden" name="contaDestino" th:value="${contaDestino}"/>
+        <input type="hidden" name="valor" th:value="${valor}"/>
+        <a th:href="@{/transferencia}" class="btn btn-outline-secondary flex-fill">
+            <i class="bi bi-arrow-left"></i> Voltar
+        </a>
+        <button type="submit" class="btn btn-primary flex-fill">
+            <i class="bi bi-check-circle-fill me-1"></i> Confirmar transferência
+        </button>
+    </form>
+</div>
+
+<script crossorigin="anonymous"
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

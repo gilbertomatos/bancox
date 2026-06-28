@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    dependency-check-suppressions.xml — Supressões de falso positivo (DA-27)
+
+    NUNCA adicionar supressão sem:
+    1. Ler o CVE completo no NVD (https://nvd.nist.gov/vuln/detail/CVE-XXXX-XXXXX)
+    2. Confirmar que o BancoX não usa o vetor de ataque descrito
+    3. Documentar o motivo no elemento <notes>
+    4. Definir data de expiração (<until>) para revisão periódica
+
+    Formato:
+    <suppress until="YYYY-MM-DD">
+        <notes>Motivo detalhado da supressão</notes>
+        <cve>CVE-XXXX-XXXXX</cve>
+    </suppress>
+-->
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+
+    <!--
+        CVE-2024-47875 + CVE-2024-45801 — DOMPurify bundled no swagger-ui
+        Suprimidos porque:
+        1. Swagger UI está desabilitado em produção (DA-16):
+           springdoc.api-docs.enabled=false em application-prod.yml.
+           O vetor de XSS só existe se o Swagger UI estiver acessível.
+        2. O ataque requer injeção de conteúdo malicioso no esquema OpenAPI.
+           No BancoX, o esquema é gerado via @Operation/@ApiResponse no código-fonte —
+           nenhum dado de usuário alimenta a especificação da API.
+        3. Em dev/staging (único ambiente onde Swagger está ativo), o modelo de
+           confiança é diferente: acesso restrito à rede interna.
+        Revisado em 2026-06-28. Rever ao atualizar springdoc para versão com
+        swagger-ui >= 5.20.0 (DOMPurify >= 3.1.7).
+    -->
+    <suppress until="2027-01-01">
+        <notes>
+            DOMPurify mXSS via raw-text wrapper elements (CVE-2024-47875).
+            Swagger UI desabilitado em produção (DA-16). Esquema OpenAPI é
+            code-controlled, sem dados de usuário na especificação.
+        </notes>
+        <cve>CVE-2024-47875</cve>
+    </suppress>
+    <suppress until="2027-01-01">
+        <notes>
+            DOMPurify FORBID_TAGS inconsistency (CVE-2024-45801).
+            Swagger UI desabilitado em produção (DA-16). Esquema OpenAPI é
+            code-controlled, sem dados de usuário na especificação.
+        </notes>
+        <cve>CVE-2024-45801</cve>
+    </suppress>
+
+    <!--
+        CVEs adicionais do DOMPurify bundled no swagger-ui 5.17.14.
+        Detectados via Retire.js, todos sem score CVSS (Unscored: Severity: medium).
+        Mesma justificativa das supressões acima: Swagger desabilitado em produção (DA-16).
+        Rever ao atualizar springdoc para versão com DOMPurify >= 3.4.1.
+    -->
+    <suppress until="2027-01-01">
+        <notes>DOMPurify 3.1.4 em swagger-ui 5.17.14. Swagger desabilitado em produção (DA-16).</notes>
+        <cve>CVE-2025-15599</cve>
+    </suppress>
+    <suppress until="2027-01-01">
+        <notes>DOMPurify 3.1.4 em swagger-ui 5.17.14. Swagger desabilitado em produção (DA-16).</notes>
+        <cve>CVE-2025-26791</cve>
+    </suppress>
+    <suppress until="2027-01-01">
+        <notes>DOMPurify 3.1.4 em swagger-ui 5.17.14. Swagger desabilitado em produção (DA-16).</notes>
+        <cve>CVE-2026-0540</cve>
+    </suppress>
+    <suppress until="2027-01-01">
+        <notes>DOMPurify 3.1.4 em swagger-ui 5.17.14. Swagger desabilitado em produção (DA-16).</notes>
+        <cve>CVE-2026-41238</cve>
+    </suppress>
+    <suppress until="2027-01-01">
+        <notes>DOMPurify 3.1.4 em swagger-ui 5.17.14. Swagger desabilitado em produção (DA-16).</notes>
+        <cve>CVE-2026-41239</cve>
+    </suppress>
+    <suppress until="2027-01-01">
+        <notes>DOMPurify 3.1.4 em swagger-ui 5.17.14. Swagger desabilitado em produção (DA-16).</notes>
+        <cve>CVE-2026-41240</cve>
+    </suppress>
+    <suppress until="2027-01-01">
+        <notes>DOMPurify 3.1.4 em swagger-ui 5.17.14. Swagger desabilitado em produção (DA-16).</notes>
+        <cve>CVE-2026-49458</cve>
+    </suppress>
+    <suppress until="2027-01-01">
+        <notes>DOMPurify 3.1.4 em swagger-ui 5.17.14. Swagger desabilitado em produção (DA-16).</notes>
+        <cve>CVE-2026-49459</cve>
+    </suppress>
+    <suppress until="2027-01-01">
+        <notes>DOMPurify 3.1.4 em swagger-ui 5.17.14. Swagger desabilitado em produção (DA-16).</notes>
+        <cve>CVE-2026-49978</cve>
+    </suppress>
+
+</suppressions>

@@ -1,0 +1,44 @@
+version: '3.9'
+
+services:
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: bancox-postgres
+    environment:
+      POSTGRES_DB: bancox
+      POSTGRES_USER: bancox
+      POSTGRES_PASSWORD: bancox
+    ports:
+      - "5432:5432"
+    volumes:
+      - bancox-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bancox"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: .
+    container_name: bancox-backend
+    ports:
+      - "8080:8080"
+    environment:
+      DB_USERNAME: bancox
+      DB_PASSWORD: bancox
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/bancox
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    build: ./frontend
+    container_name: bancox-frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
+volumes:
+  bancox-postgres-data:

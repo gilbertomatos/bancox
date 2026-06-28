@@ -1,0 +1,33 @@
+# Profile de produção — sobrescreve application.yml
+# Ativar com: SPRING_PROFILES_ACTIVE=prod
+
+spring:
+  jpa:
+    show-sql: false
+
+# Swagger desabilitado em produção (DA-16 / OWASP A05)
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+# Actuator — endpoints adicionais protegidos por ADMIN em produção (DA-20)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics, prometheus, flyway, threaddump
+  endpoint:
+    health:
+      show-details: when-authorized   # detalhes apenas para ADMIN autenticado
+
+app:
+  jwt:
+    cookie:
+      secure: true   # HTTPS obrigatório em produção (DA-05)
+
+logging:
+  level:
+    com.bancox: INFO
+    org.springframework.security: WARN

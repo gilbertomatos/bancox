@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    spotbugs-exclude.xml — Exclusões de falsos positivos SpotBugs (DA-27)
+
+    NUNCA adicionar exclusão sem:
+    1. Revisar o bug reportado manualmente
+    2. Confirmar que é falso positivo para o contexto do BancoX
+    3. Documentar o motivo no atributo comment
+    4. Registrar em decisoes-arquiteturais.md se for exclusão recorrente
+
+    Referência de categorias Find Security Bugs:
+    https://find-sec-bugs.github.io/bugs.htm
+-->
+<FindBugsFilter>
+
+    <!--
+        Exclusões de configuração Spring (falsos positivos comuns)
+        Spring injeta dependências via reflexão — SpotBugs não entende o contexto
+    -->
+    <Match>
+        <Class name="~com\.bancox\.config\..*"/>
+        <Bug category="CORRECTNESS"/>
+    </Match>
+
+    <!--
+        BancoxApplication.main() — ponto de entrada, não é código de negócio
+    -->
+    <Match>
+        <Class name="com.bancox.BancoxApplication"/>
+        <Bug pattern="UPM_UNCALLED_PRIVATE_METHOD"/>
+    </Match>
+
+    <!--
+        SecurityConfig: CSRF desabilitado intencionalmente (DA-26)
+        Cookie SameSite=Strict protege contra CSRF cross-origin.
+        Esta é uma decisão arquitetural documentada — NÃO reabilitar CSRF.
+    -->
+    <Match>
+        <Class name="com.bancox.config.SecurityConfig"/>
+        <Bug pattern="SPRING_CSRF_PROTECTION_DISABLED"/>
+    </Match>
+
+    <!--
+        SecurityConfig: armazena JwtCookieFilter via injeção por construtor (DA-01)
+        Spring injeta beans via @RequiredArgsConstructor — bean é imutável após construção.
+        Padrão obrigatório no BancoX (NÃO usar @Autowired em campo).
+    -->
+    <Match>
+        <Class name="com.bancox.config.SecurityConfig"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+
+    <!--
+        ExtratoResponse: List<LancamentoResponse> em DTO de resposta (DA-09)
+        Classe é um DTO imutável de saída — a lista é construída uma vez e nunca modificada
+        pelo chamador. Copiar defensivamente seria overhead desnecessário em um DTO read-only.
+    -->
+    <Match>
+        <Class name="com.bancox.dto.response.ExtratoResponse"/>
+        <Bug pattern="EI_EXPOSE_REP"/>
+    </Match>
+
+    <Match>
+        <Class name="com.bancox.dto.response.ExtratoResponse$ExtratoResponseBuilder"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+
+    <!--
+        JwtService: exceção no construtor é comportamento intencional (DA-14)
+        Se JWT_SECRET for inválido (< 256 bits), a aplicação NÃO deve subir.
+        O fail-fast no construtor é a garantia de que chaves fracas nunca chegam a produção.
+        CT_CONSTRUCTOR_THROW seria um problema se o objeto pudesse ser finalizado com estado
+        parcial — mas Spring gerencia o ciclo de vida e a app não sobe se o bean falhar.
+    -->
+    <Match>
+        <Class name="com.bancox.service.JwtService"/>
+        <Bug pattern="CT_CONSTRUCTOR_THROW"/>
+    </Match>
+
+</FindBugsFilter>

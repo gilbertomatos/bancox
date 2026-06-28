@@ -1,0 +1,41 @@
+# Maven
+target/
+*.jar
+*.war
+*.class
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+.project
+.classpath
+.settings/
+
+# Spring Boot
+application-local.yml
+application-local.properties
+
+# Node / Frontend
+node_modules/
+dist/
+.env
+.env.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Relatórios SAST — gerados pelo mvn verify (DA-27)
+# NÃO commitar — gerados automaticamente no CI
+target/spotbugs.html
+target/dependency-check-report.html
+target/dependency-check-report.xml
+# Cache do NVD — grande e pode ser regenerado
+target/dependency-check-data/

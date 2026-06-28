@@ -1,0 +1,4 @@
+/* BancoX — overrides mínimos sobre Bootstrap 5 */
+.font-monospace { font-family: 'Courier New', Courier, monospace; }
+.nav-link.active { font-weight: 600; }
+.table th { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; }

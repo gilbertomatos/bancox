@@ -1,0 +1,45 @@
+# .gitleaks.toml — Configuração do Gitleaks (DA-27)
+# Varredura de segredos hardcoded no código e histórico git
+# Execução: gitleaks detect --source . --config .gitleaks.toml
+# CI: gitleaks detect --source . --config .gitleaks.toml --exit-code 1
+
+title = "BancoX Gitleaks Config"
+
+[extend]
+# Usar regras padrão do Gitleaks como base
+useDefault = true
+
+[[rules]]
+# Regra customizada: JWT_SECRET hardcoded
+id = "bancox-jwt-secret"
+description = "JWT_SECRET hardcoded — deve vir de variável de ambiente (DA-14)"
+regex = '''(?i)(jwt[_-]?secret\s*[=:]\s*)["']?[A-Za-z0-9+/=]{32,}["']?'''
+tags = ["key", "jwt", "bancox"]
+
+[[rules]]
+# Regra customizada: senha de banco hardcoded
+id = "bancox-db-password"
+description = "Senha de banco hardcoded — deve vir de variável de ambiente"
+regex = '''(?i)(db[_-]?password|datasource[_-]?password)\s*[=:]\s*["']?[^\s${}]{8,}["']?'''
+tags = ["database", "password", "bancox"]
+
+[allowlist]
+# Arquivos que podem conter falsos positivos legítimos
+paths = [
+    ".gitleaks.toml",
+    "dependency-check-suppressions.xml",
+    "spotbugs-exclude.xml",
+    # Build artifacts — não são código-fonte, podem conter logs de teste
+    "target/",
+]
+
+# Commits do histórico a ignorar (adicionar quando necessário)
+commits = []
+
+# Strings que são explicitamente permitidas (valores de teste conhecidos)
+regexes = [
+    # JWT secret de teste em application.yml de teste
+    "test-secret-key-for-testing-only-minimum-256-bits-aaaa",
+    # Placeholder de exemplo na documentação
+    "eyJhbGci\\.\\.\\.",
+]
