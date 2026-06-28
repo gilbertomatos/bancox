@@ -65,7 +65,8 @@ public class TransferenciaService {
             BigDecimal novoSaldoOrigem = saldoOrigem.subtract(valor);
             BigDecimal novoSaldoDestino = contaDestino.getSaldo().add(valor);
 
-            TransferenciaEntity transferencia = transferenciaRepository.save(
+            // saveAndFlush garante INSERT imediato antes dos lançamentos que referenciam transfer_id por FK
+            TransferenciaEntity transferencia = transferenciaRepository.saveAndFlush(
                 TransferenciaEntity.builder()
                     .id(transferId)
                     .contaOrigem(contaOrigemId)
