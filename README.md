@@ -196,3 +196,14 @@ O extrato já contém lançamentos de crédito, débito e uma transferência ent
 ## Como desenvolver uma nova feature
 
 Consulte `Processo.md` — seção "1. Nova Feature".
+
+
+---
+
+📜 License
+
+This project is open-source under the MIT License.
+Feel free to use, modify, and share it.
+
+---
+[![Java CI with Maven](https://github.com/gilbertomatos/bancox/actions/workflows/maven.yml/badge.svg)](https://github.com/gilbertomatos/bancox/actions/workflows/maven.yml)
