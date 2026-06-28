@@ -64,6 +64,64 @@ Cobrir: fluxo completo do HTTP ao banco
 
 </details>
 
+## O que foi gerado pelo Claude Code
+
+Todo o conteúdo deste repositório foi produzido a partir de um único prompt (ver abaixo) aplicado sobre uma base de documentação estruturada em `.claude/`. Nenhuma linha de código foi escrita manualmente.
+
+### Documentação de entrada (`.claude/`) — o harness
+
+| Arquivo | Conteúdo |
+|---|---|
+| `CLAUDE.md` | Identidade do agente, glossário, regras de negócio, fallbacks globais |
+| `context/arquitetura.md` | Stack completa, estrutura de pacotes, princípios SOLID aplicados, armadilhas conhecidas |
+| `context/autenticacao-autorizacao.md` | Fluxo JWT cookie, perfis, mapeamento de endpoints, regras OWASP |
+| `context/contratos-api.md` | Envelopes de resposta e catálogo completo de erros |
+| `context/design-system.md` | Tokens Bootstrap, componentes, mapa de telas, padrões Thymeleaf |
+| `context/decisoes-arquiteturais.md` | 18 decisões técnicas documentadas (DA-01 a DA-30) com contexto, motivo e restrições |
+| `context/modelo-er/` | 5 entidades com campos, relacionamentos e regras de integridade |
+| `casos-de-uso/UC-00…UC-04` | 5 casos de uso de negócio com user story, fluxo, exceções e exemplos |
+| `casos-de-uso/UC-UI-01…UC-UI-05` | 5 casos de uso de interface com estados de tela e dados do Model |
+
+### Código gerado — o que saiu
+
+**Backend (56 arquivos Java)**
+- 5 entidades JPA · 5 repositories · 7 services · 7 controllers (REST + Thymeleaf)
+- 14 exceptions customizadas + `GlobalExceptionHandler`
+- `JwtCookieFilter` · `SecurityConfig` · `UserPrincipal` · `LoginRateLimiter` (Bucket4j)
+- 4 DTOs de request · 5 DTOs de response · `TipoLancamentoConverter`
+
+**Frontend server-side (9 templates Thymeleaf)**
+- `login.html` · `dashboard.html` · `extrato.html`
+- `transferencia.html` · `transferencia-confirmacao.html` · `transferencia-comprovante.html`
+- `gestao-contas.html` · `layout.html` (fragment) · `alert.html` (fragment)
+
+**Banco de dados (6 migrations Flyway)**
+- V1–V5: schema completo com correções incrementais
+- V6: seed com dados de demonstração
+
+**Testes (72 testes em 11 classes)**
+- Unitários com Mockito: `ContaServiceTest` · `TransferenciaServiceTest` · `ExtratoServiceTest` · `AuthServiceTest` · `ContaGestaoServiceTest` · `LoginRateLimiterTest`
+- Integração com `@SpringBootTest`: `ContaControllerTest` · `TransferenciaControllerTest` · `AdminContaControllerTest` · `GlobalExceptionHandlerTest`
+- Startup com PostgreSQL real via Testcontainers: `ApplicationStartupTest`
+
+**Qualidade e segurança**
+- `pom.xml` com JaCoCo (metas por pacote), SpotBugs + Find Security Bugs, OWASP Dependency-Check
+- `spotbugs-exclude.xml` · `dependency-check-suppressions.xml` · `.gitleaks.toml`
+- `application-prod.yml` (Swagger desabilitado, graceful shutdown, virtual threads)
+
+### Métricas finais
+
+| Métrica | Valor |
+|---|---|
+| Testes passando | 72 / 72 |
+| Cobertura `service/` | 96,9% |
+| Cobertura global | 93,1% |
+| Bugs SpotBugs | 0 |
+| CVEs CVSS ≥ 7,0 | 0 |
+| Leaks Gitleaks | 0 |
+
+---
+
 ## Stack
 
 **Backend:** Java 21 · Spring Boot 3.3 · Maven · Lombok · Flyway · PostgreSQL · Swagger  
