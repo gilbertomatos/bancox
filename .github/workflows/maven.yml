@@ -46,17 +46,23 @@ jobs:
           restore-keys: |
             owasp-dc-nvd-${{ runner.os }}-
 
-      # Cache hit → dados NVD frescos do cache (-DautoUpdate=false, execução rápida)
-      # Cache miss → primeira execução da semana: baixa atualizações do NVD
+      # Cache miss → baixa base NVD em passo dedicado, ANTES dos testes.
+      # Garante que o NVD seja cacheado mesmo que os testes falhem depois:
+      # mvn verify para na fase "test" em caso de falha e nunca alcança o DC.
+      # goal update-only: apenas atualiza o banco NVD, sem analisar dependências.
+      # continue-on-error: se o download falhar (rate-limit, timeout), o build continua.
+      - name: Atualizar base NVD (pula se cache presente)
+        if: steps.dc-cache.outputs.cache-hit != 'true'
+        continue-on-error: true
+        env:
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+        run: mvn -B dependency-check:update-only --file pom.xml
+
+      # -DautoUpdate=false sempre: NVD já foi baixado no passo acima ou restaurado do cache.
       - name: Build, testes e SAST (mvn verify)
         env:
           NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
-        run: |
-          if ${{ steps.dc-cache.outputs.cache-hit == 'true' }}; then
-            mvn -B verify --file pom.xml -DautoUpdate=false
-          else
-            mvn -B verify --file pom.xml
-          fi
+        run: mvn -B verify --file pom.xml -DautoUpdate=false
 
       - name: Gitleaks — detecção de segredos no histórico git
         run: |
